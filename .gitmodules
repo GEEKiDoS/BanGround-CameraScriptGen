@@ -1,0 +1,3 @@
+[submodule "Packages/HiddenMonk.U3DRTG"]
+	path = Packages/HiddenMonk.U3DRTG
+	url = https://github.com/GEEKiDoS/Unity3DRuntimeTransformGizmo.git
