@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -16,7 +17,13 @@ namespace Editor
 
         public KeyFrame this[int index]
         {
-            get => keyFrames[index];
+            get
+            {
+                if (index >= keyFrames.Count)
+                    return null;
+
+                return keyFrames[index];
+            }
         }
 
         public int Count => keyFrames.Count;
@@ -41,24 +48,28 @@ namespace Editor
 
         public int IndexOf(KeyFrame kf) => keyFrames.IndexOf(kf);
         public void RemoveAt(int idx) => keyFrames.RemoveAt(idx);
+
+        public List<KeyFrame> ToList() => keyFrames;
+    }
+
+    public class DummyScriptObject
+    {
+        [JsonProperty(PropertyName = "isCamera")]
+        public bool IsCamera { get; set; }
+        [JsonProperty(PropertyName = "textureName")]
+        public string TextureName { get; set; }
+        [JsonProperty(PropertyName = "keyFrames")]
+        public List<KeyFrame> KeyFrames { get; set; }
     }
 
     public class ScriptObject : MonoBehaviour
     {
         public string Name => name;
-
-        [JsonProperty(PropertyName = "IsCamera")]
         public bool IsCamera { get; set; }
-
-        [JsonProperty(PropertyName = "textureName")]
         public string TextureName { get; set; }
-
-        [JsonProperty(PropertyName = "KeyFrames")]
         public SortedKeyFrames KeyFrames { get; } = new SortedKeyFrames();
-
         public int SelectKeyFrameIndex { get; set; }
-        public KeyFrame SelectedKeyFrame => KeyFrames[SelectKeyFrameIndex];
-
+        public KeyFrame SelectedKeyFrame =>  KeyFrames[SelectKeyFrameIndex];
         private static Dictionary<string, int> texRefCount = new Dictionary<string, int>();
         private static Dictionary<string, Sprite> cachedSprs = new Dictionary<string, Sprite>();
         private int lastKeyframe = 0;
@@ -93,13 +104,60 @@ namespace Editor
             set => _ = sprRenderer == null ? UnityEngine.Color.white : sprRenderer.color = value;
         }
 
+        public static List<ScriptObject> FromJson(string json)
+        {
+            var strObjs = JsonConvert.DeserializeObject<List<DummyScriptObject>>(json);
+            var objs = new List<ScriptObject>();
+
+            foreach(var obj in strObjs)
+            {
+                var gameObJ = obj.IsCamera ? GameObject.Find(CameraOperator.CAMERA_NAME) : new GameObject();
+                var scriptObj = gameObJ.AddComponent<ScriptObject>();
+
+                scriptObj.IsCamera = obj.IsCamera;
+                scriptObj.TextureName = obj.TextureName;
+                
+                foreach(var key in obj.KeyFrames)
+                {
+                    scriptObj.KeyFrames.Add(key);
+                }
+
+                if(obj.IsCamera)
+                {
+                    scriptObj.Origin = CameraOperator.CamOrigin;
+                    scriptObj.ZeroRotation = CameraOperator.CamZeroRot;
+                }
+
+                objs.Add(scriptObj);
+            }
+               
+            return objs;
+        }
+
+        public static string ToJson(List<ScriptObject> objs)
+        {
+            var dummyObjs = new List<DummyScriptObject>();
+
+            foreach (var obj in objs)
+            {
+                var dummy = new DummyScriptObject
+                {
+                    IsCamera = obj.IsCamera,
+                    TextureName = obj.TextureName,
+                    KeyFrames = obj.KeyFrames.ToList()
+                };
+
+                dummyObjs.Add(dummy);
+            }
+                
+
+            return JsonConvert.SerializeObject(dummyObjs, Formatting.Indented);
+        }
+
         public void Start()
         {
             if (IsCamera)
             {
-                Origin = transform.position;
-                ZeroRotation = transform.eulerAngles;
-
                 name = "Main Camera";
 
                 return;
@@ -202,6 +260,7 @@ namespace Editor
             }
         }
 
+        [JsonIgnore]
         public GameObject GameObject => gameObject;
     }
 }

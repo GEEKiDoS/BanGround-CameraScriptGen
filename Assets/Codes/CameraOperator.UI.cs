@@ -18,7 +18,7 @@ public partial class CameraOperator : MonoBehaviour
         ImGui.SetNextWindowSize(new Vector2(150, Screen.height - 125), ImGuiCond.Once);
         ImGui.Begin("Objects", ImGuiWindowFlags.NoSavedSettings);
         {
-            if(ImGui.Checkbox("Camera View", ref camView))
+            if (ImGui.Checkbox("Camera View", ref camView))
             {
                 ToggleCameraView();
             }
@@ -35,7 +35,7 @@ public partial class CameraOperator : MonoBehaviour
             }
             ImGui.EndChild();
 
-            if(ImGui.Button("+"))
+            if (ImGui.Button("+"))
             {
                 var sfd = new SelectFileDialog()
                     .SetFilter("Image file\0*.jpg;*.png\0")
@@ -43,12 +43,12 @@ public partial class CameraOperator : MonoBehaviour
                     .SetDefaultExt("png")
                     .Show();
 
-                if(sfd.IsSucessful)
+                if (sfd.IsSucessful)
                 {
                     var gameObJ = new GameObject();
                     var scriptObj = gameObJ.AddComponent<ScriptObject>();
                     scriptObj.TextureName = sfd.File;
-                    
+
                     var newKeyframe = KeyFrame.Empty();
                     newKeyframe.Position = transform.position + transform.rotation * new Vector3(0, 0, 5);
                     newKeyframe.Rotation = transform.eulerAngles;
@@ -190,7 +190,7 @@ public partial class CameraOperator : MonoBehaviour
                 if (ImGui.DragFloat3("Rotation", ref kf.Rotation))
                     modified = true;
 
-                if(!activeObject.IsCamera)
+                if (!activeObject.IsCamera)
                 {
                     if (ImGui.DragFloat3("Scale", ref kf.Scale))
                         modified = true;
@@ -259,7 +259,7 @@ public partial class CameraOperator : MonoBehaviour
         ImGui.Begin("Playback Control", window_flags);
         {
             var len = 0.0f;
-            
+
             if (ass.clip != null)
                 len = ass.clip.length;
 

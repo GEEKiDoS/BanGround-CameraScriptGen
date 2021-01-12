@@ -466,6 +466,8 @@ namespace Editor
 		public static readonly Func<int, Vector4, Vector4, float, Vector4> Interpolate = (f, v1, v2, t) => Vector4.LerpUnclamped(v1, v2, Easings.interpolationFuncs[f](t));
 
 		internal float _time;
+
+		[JsonProperty(PropertyName = "time")]
 		public float Time
 		{
 			get
@@ -480,11 +482,16 @@ namespace Editor
 			}
 		}
 
-        public Vector3 Position;
-        public Vector3 Rotation;
+		[JsonProperty(PropertyName = "position")]
+		public Vector3 Position;
+		[JsonProperty(PropertyName = "rotation")]
+		public Vector3 Rotation;
+		[JsonProperty(PropertyName = "scale")]
 		public Vector3 Scale;
+		[JsonProperty(PropertyName = "color")]
 		public Vector4 Color;
-        public int InterpolationMode = 1;
+		[JsonProperty(PropertyName = "mode")]
+		public int InterpolationMode = 1;
 
         public class KeyFrameComparer : IComparer<KeyFrame>
         {
